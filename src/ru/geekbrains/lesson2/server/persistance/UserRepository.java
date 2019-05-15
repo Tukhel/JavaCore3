@@ -3,6 +3,7 @@ package ru.geekbrains.lesson2.server.persistance;
 import ru.geekbrains.lesson2.server.User;
 
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class UserRepository {
@@ -11,47 +12,58 @@ public class UserRepository {
 
     User user = new User();
 
-    public UserRepository(Connection conn) {
+    public UserRepository(Connection conn) throws SQLException {
         this.conn = conn;
+        creatTableIfNotExists(conn);
 
     }
 
     public void insert(User user) throws SQLException {
-        PreparedStatement prepareStatement = conn.prepareStatement("insert into users(login, password) values (?, ?)");
-        prepareStatement.setString(1, "ivan");
-        prepareStatement.setString(2, "123");
-        prepareStatement.execute();
+        try (PreparedStatement prepareStatement = conn.prepareStatement(
+                "insert into users(login, password) values (?, ?)")) {
+            prepareStatement.setString(1, user.getLogin());
+            prepareStatement.setString(2, user.getPassword());
+            prepareStatement.execute();
+        }
     }
 
     public User findByLogin(String login) throws SQLException {
-        Statement find = conn.createStatement();
-        ResultSet resultFind = find.executeQuery("select * from users where login = 'ivan'");
+        try (PreparedStatement find = conn.prepareStatement(
+                "select id, login, password from users where login = ?")) {
+            find.setString(1, login);
+            ResultSet resultFind = find.executeQuery();
 
-        while (resultFind.next()) {
-            user.setId(resultFind.getInt(1));
-            user.setLogin(resultFind.getString(2));
-            user.setPassword(resultFind.getString(3));
-
-            System.out.println(user);
+            if (resultFind.next()) {
+                return new User(resultFind.getInt(1),
+                        resultFind.getString(2),
+                        resultFind.getString(3));
+            }
         }
-        resultFind.close();
-
-        return null;
+        return new User(-1, "", "");
     }
 
     public List<User> getAllUsers() throws SQLException {
-        Statement stmt = conn.createStatement();
-        ResultSet resultSet = stmt.executeQuery("select * from users");
+        List<User> res = new ArrayList<>();
+        try (Statement stmt = conn.createStatement()) {
+            ResultSet rs = stmt.executeQuery("select id, login, password from users");
 
-        System.out.println("Все пользователи:");
-        while (resultSet.next()) {
-            user.setId(resultSet.getInt(1));
-            user.setLogin(resultSet.getString(2));
-            user.setPassword(resultSet.getString(3));
-
-            System.out.println(user);
+            while (rs.next()) {
+                res.add(new User(rs.getInt(1),
+                        rs.getString(2),
+                        rs.getString(3)));
+            }
         }
-        resultSet.close();
-        return null;
+        return res;
+    }
+
+    public void creatTableIfNotExists(Connection conn) throws SQLException {
+        try (Statement stmt = conn.createStatement()) {
+            stmt.execute("create table if not exists users (\n" +
+                    "\tid int auto_increment primary key,\n" +
+                    "   login varchar(25),\n" +
+                    "   password varchar(25),\n" +
+                    "   unique index uq_login(login)\n" +
+                    ");");
+        }
     }
 }
