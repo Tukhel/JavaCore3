@@ -1,5 +1,7 @@
 package ru.geekbrains.lesson2.client;
 
+import ru.geekbrains.lesson2.client.history.ChatHistory;
+
 import java.io.Closeable;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
