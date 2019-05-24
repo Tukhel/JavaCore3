@@ -117,7 +117,7 @@ public class ChatMainWindow extends JFrame implements MessageReciever {
             System.exit(0);
         }
 
-        List<TextMessage> lastMessages = this.chatHistory.getLastMessage(5);
+        List<TextMessage> lastMessages = this.chatHistory.getLastMessages(5);
         for (TextMessage msg : lastMessages) {
             messageListModel.add(messageListModel.size(), msg);
         }

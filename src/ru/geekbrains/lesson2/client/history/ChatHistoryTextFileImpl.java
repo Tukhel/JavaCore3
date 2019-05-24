@@ -11,14 +11,14 @@ import java.util.List;
 public class ChatHistoryTextFileImpl implements ChatHistory {
 
     private static final String HISTORY_FILE_TEMPLATE = "%s-message-history.txt";
-    private static final String MSG_PATTERN = "&s\t%s\t%s\t%s";
+    private static final String MSG_PATTERN = "%s\t%s\t%s\t%s";
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     private final File file;
     private final PrintWriter historyWriter;
 
     public ChatHistoryTextFileImpl(String login) throws IOException {
-        file = new File(String.format(HISTORY_FILE_TEMPLATE), login  );
+        file = new File(String.format(HISTORY_FILE_TEMPLATE, login));
 
         if (!file.exists()) {
             file.createNewFile();
@@ -27,17 +27,19 @@ public class ChatHistoryTextFileImpl implements ChatHistory {
     }
 
     @Override
-    public void addMessage(TextMessage message) {
+    public synchronized void addMessage(TextMessage message) {
         String msg = String.format(MSG_PATTERN, message.getCreated().format(DATE_FORMATTER),
                 message.getUserFrom(), message.getUserTo(), message.getText());
         historyWriter.println(msg);
     }
 
     @Override
-    public List<TextMessage> getLastMessage(int count) {
+    public List<TextMessage> getLastMessages(int count) {
         List<String> msgs = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-
+            while (reader.ready()) {
+                msgs.add(reader.readLine());
+            }
         } catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -49,7 +51,7 @@ public class ChatHistoryTextFileImpl implements ChatHistory {
         for (String str : msgs) {
             res.add(parseMsg(str));
         }
-        return null;
+        return res;
     }
 
     @Override
@@ -59,7 +61,6 @@ public class ChatHistoryTextFileImpl implements ChatHistory {
 
     private TextMessage parseMsg(String str) {
         String[] split = str.split("\t", 4);
-        return new TextMessage(split[1], split[2],split[3],
-                LocalDateTime.parse(split[0], DATE_FORMATTER));
+        return new TextMessage(split[1], split[2], split[3], LocalDateTime.parse(split[0], DATE_FORMATTER));
     }
 }

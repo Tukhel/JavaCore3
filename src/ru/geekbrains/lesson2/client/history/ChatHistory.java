@@ -8,7 +8,7 @@ public interface ChatHistory {
 
     void addMessage(TextMessage message);
 
-    List<TextMessage> getLastMessage(int count);
+    List<TextMessage> getLastMessages(int count);
 
     void flush();
 }
