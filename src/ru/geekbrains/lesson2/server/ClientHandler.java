@@ -7,6 +7,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 import static ru.geekbrains.lesson2.client.MessagePatterns.*;
 
@@ -16,17 +18,19 @@ public class ClientHandler {
     private final Socket socket;
     private final DataInputStream inp;
     private final DataOutputStream out;
-    private final Thread handleThread;
-    private ChatServer chatServer;
+    private final ExecutorService executorService;
+    private final Future<?> handlerFuture;
+    private final ChatServer chatServer;
 
-    public ClientHandler(String login, Socket socket, ChatServer chatServer) throws IOException {
+    public ClientHandler(String login, Socket socket, ExecutorService executorService, ChatServer chatServer) throws IOException {
         this.login = login;
         this.socket = socket;
         this.inp = new DataInputStream(socket.getInputStream());
         this.out = new DataOutputStream(socket.getOutputStream());
+        this.executorService = executorService;
         this.chatServer = chatServer;
 
-        this.handleThread = new Thread(new Runnable() {
+        this.handlerFuture = executorService.submit(new Runnable() {
             @Override
             public void run() {
                 while (!Thread.currentThread().isInterrupted()) {
@@ -55,8 +59,6 @@ public class ClientHandler {
                 }
             }
         });
-        this.chatServer = chatServer;
-        this.handleThread.start();
     }
 
     public String getLogin() {
