@@ -1,12 +1,10 @@
 package ru.geekbrains.lesson5;
 
 public class Road extends Stage {
-
-    Road(int length) {
+    public Road(int length) {
         this.length = length;
         this.description = "Дорога " + length + " метров";
     }
-
     @Override
     public void go(Car c) {
         try {

@@ -1,24 +1,17 @@
 package ru.geekbrains.lesson5;
 
 import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Car implements Runnable {
 
-    private static CyclicBarrier cyclicBarrier;
-    private static boolean winner;
-    private static int CARS_COUNT;
-
-    static {
-        CARS_COUNT = 0;
-    }
+    private static int CARS_COUNT = 0;
 
     private Race race;
     private int speed;
+    private CyclicBarrier barrier;
+    private AtomicInteger finishCount;
     private String name;
-
-    public static void setCyclicBarrier(CyclicBarrier cyclicBarrier) {
-        Car.cyclicBarrier = cyclicBarrier;
-    }
 
     public String getName() {
         return name;
@@ -28,9 +21,11 @@ public class Car implements Runnable {
         return speed;
     }
 
-    public Car(Race race, int speed) {
+    public Car(Race race, int speed, CyclicBarrier barrier, AtomicInteger finishCount) {
         this.race = race;
         this.speed = speed;
+        this.barrier = barrier;
+        this.finishCount = finishCount;
         CARS_COUNT++;
         this.name = "Участник #" + CARS_COUNT;
     }
@@ -41,20 +36,21 @@ public class Car implements Runnable {
             System.out.println(this.name + " готовится");
             Thread.sleep(500 + (int)(Math.random() * 800));
             System.out.println(this.name + " готов");
-            cyclicBarrier.await();
+            barrier.await();
+            barrier.await();
+
             for (int i = 0; i < race.getStages().size(); i++) {
                 race.getStages().get(i).go(this);
             }
-            checkWinner(this);
+
+            if (finishCount.incrementAndGet() == 1) {
+                System.out.println(this.name + " ПОБЕДИЛ");
+            }
+
+            barrier.await();
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
 
-    private static synchronized void checkWinner(Car car) {
-        if (!winner) {
-            System.out.println(car.name + " - WIN!!!");
-            winner = true;
-        }
     }
 }
