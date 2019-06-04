@@ -12,25 +12,14 @@ public class Main {
 
     public static int[] Task1(int[] array) {
 
-        int index = 0;
-        int[] arr;
-
-        if(array.length == 0) {
-            throw new NullPointerException();
-        } else {
-            for (int i = 0; i < array.length; ++i) {
-                if (array[i] == 4) {
-                    index = i + 1;
-                }
-            }
-            if(index > 0) {
-                arr = Arrays.copyOfRange(array, index, array.length);
-                System.out.println("Result" + Arrays.toString(arr));
-            } else {
-                throw new RuntimeException();
+        for (int i = array.length - 1; i >= 0; i--) {
+            if (array[i] == 4) {
+                return Arrays.copyOfRange(array, i+1, array.length);
             }
         }
-        return arr;
+
+        throw new RuntimeException("Digit 4 is not found in the array");
+
     }
 
     public static boolean Task2(int[] array) {

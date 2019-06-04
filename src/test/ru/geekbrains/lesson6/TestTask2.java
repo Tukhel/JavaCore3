@@ -1,3 +1,5 @@
+package ru.geekbrains.lesson6;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -11,26 +13,27 @@ import java.util.Collection;
 
 
 @RunWith(Parameterized.class)
-public class TestTask1 {
+public class TestTask2 {
 
     private Main array;
     private int[] arr;
-    private int[] res;
+    private boolean res;
+
 
     @Parameterized.Parameters
     public static Collection params() {
         return Arrays.asList(
                 new Object[][]{
-                        {new int[] {1, 2, 4, 3, 4, 1, 7}, new int[] {1, 7}},
-                        {new int[] {1, 2, 3, 4, 7, 8, 9}, new int[] {7, 8, 9}},
-                        {new int[] {}, new int[] {1, 2, 3}},
-                        {new int[] {4, 4, 2, 3}, new int[] {1, 2, 3}},
-                        {new int[] {4, 1, 7}, new int[] {1, 7}}
+                        {new int[]{1, 1, 1, 4}, true},
+                        {new int[]{4, 4, 4, 1}, true},
+                        {new int[]{5, 6, 2, 2}, false},
+                        {new int[]{1, 1, 1, 1}, false},
+                        {new int[]{4, 4, 4, 4}, true}
                 }
         );
     }
 
-    public TestTask1(int[] arr, int[] res) {
+    public TestTask2(int[] arr, boolean res) {
         this.arr = arr;
         this.res = res;
     }
@@ -45,6 +48,6 @@ public class TestTask1 {
 
     @Test
     public void testArrayCheck() {
-        Assert.assertArrayEquals(res, array.Task1(arr));
+        Assert.assertEquals(array.Task2(arr), res);
     }
 }
